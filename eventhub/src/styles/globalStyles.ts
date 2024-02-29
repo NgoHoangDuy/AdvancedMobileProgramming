@@ -21,7 +21,7 @@ export const globalStyles = StyleSheet.create({
     backgroundColor: appColors.white,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    // minHeight: 56,
+    minHeight: 56,
     flexDirection: 'row',
   },
   shadow: {
@@ -52,20 +52,5 @@ export const globalStyles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 100,
-  },
-
-  tag: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: appColors.white,
-    borderRadius: 100,
-    marginRight: 12,
-  },
-
-  card: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: appColors.white,
-    margin: 12,
   },
 });

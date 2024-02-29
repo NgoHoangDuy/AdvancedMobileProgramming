@@ -1,5 +1,16 @@
 /* eslint-disable prettier/prettier */
-import HomeScreen from './home/HomeScreen';
-import LoginScreen from './auth/LoginScreen';
 import SplashScreen from './SplashScreen';
-export {HomeScreen, LoginScreen, SplashScreen};
+import ForgotPassword from './auth/ForgotPassword';
+import LoginScreen from './auth/LoginScreen';
+import SignUpScreen from './auth/SignUpScreen';
+//import Verification from './auth/Verification';
+import HomeScreen from './home/HomeScreen';
+
+export {
+  HomeScreen,
+  LoginScreen,
+  SplashScreen,
+  //Verification,
+  ForgotPassword,
+  SignUpScreen,
+};

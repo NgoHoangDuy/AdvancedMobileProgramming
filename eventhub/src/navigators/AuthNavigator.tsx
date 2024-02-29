@@ -1,7 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { LoginScreen } from '../screens';
+import { ForgotPassword, LoginScreen, SignUpScreen } from '../screens';
 import OnbroadingScreen from '../screens/auth/OnbroadingScreen';
+
 
 const AuthNavigator = () => {
   const Stack = createNativeStackNavigator();
@@ -11,6 +12,8 @@ const AuthNavigator = () => {
     }}>
       <Stack.Screen name="OnbroadingScreen" component={OnbroadingScreen}/>
       <Stack.Screen name="LoginScreen" component={LoginScreen}/>
+      <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
     </Stack.Navigator>
   );
 };
