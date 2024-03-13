@@ -1,6 +1,6 @@
 import {Lock, Sms, User} from 'iconsax-react-native';
 import React, {useEffect, useState} from 'react';
-//import {useDispatch} from 'react-redux';
+import {useDispatch} from 'react-redux';
 import {
   ButtonComponent,
   ContainerComponent,
@@ -12,16 +12,18 @@ import {
 } from '../../components';
 import {appColors} from '../../constants/appColors';
 import SocialLogin from './components/SocialLogin';
-//import {LoadingModal} from '../../modals';
-//import {Validate} from '../../utils/validate';
+import {LoadingModal} from '../../modals';
+import {Validate} from '../../utils/validate';
 //import SocialLogin from './components/SocialLogin';
-//import authenticationAPI from '../../apis/authApi';
+import authenticationAPI from '../../apis/authApi';
+import { addAuth } from '../../redux/reducers/authReducer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-/*interface ErrorMessages {
+interface ErrorMessages {
   email: string;
   password: string;
   confirmPassword: string;
-}*/
+}
 
 const initValue = {
   username: '',
@@ -44,9 +46,9 @@ const SignUpScreen = ({navigation}: any) => {
     setValues(data);
   };
 
-  //const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-  /*useEffect(() => {
+  useEffect(() => {
     if (
       !errorMessage ||
       (errorMessage &&
@@ -63,13 +65,13 @@ const SignUpScreen = ({navigation}: any) => {
     }
   }, [errorMessage, values]);
 
-  const handleChangeValue = (key: string, value: string) => {
+  /*const handleChangeValue = (key: string, value: string) => {
     const data: any = {...values};
 
     data[`${key}`] = value;
 
     setValues(data);
-  };
+  };*/
 
   const formValidator = (key: string) => {
     const data = {...errorMessage};
@@ -109,26 +111,33 @@ const SignUpScreen = ({navigation}: any) => {
   };
 
   const handleRegister = async () => {
-    const api = `/verification`;
-    setIsLoading(true);
+    //const api = `/verification`;
+    //setIsLoading(true);
     try {
-      const res = await authenticationAPI.HandleAuthentication(
-        api,
-        {email: values.email},
+      const res = await authenticationAPI.HandleAuthentication('/register', 
+      {
+        fullname: values.username,
+        email: values.email,
+        password: values.password
+      },
+        //api,
+        //{email: values.email},
         'post',
       );
+      dispatch(addAuth(res.data));
+      await AsyncStorage.setItem('auth', JSON.stringify(res.data));
+      console.log(res);
+      //setIsLoading(false);
 
-      setIsLoading(false);
-
-      navigation.navigate('Verification', {
+      /*navigation.navigate('Verification', {
         code: res.data.code,
         ...values,
-      });
+      });*/
     } catch (error) {
       console.log(error);
-      setIsLoading(false);
+      //setIsLoading(false);
     }
-  };*/
+  };
 
   return (
     <>
@@ -188,7 +197,7 @@ const SignUpScreen = ({navigation}: any) => {
         <SpaceComponent height={16} />
         <SectionComponent>
           <ButtonComponent
-            //onPress={handleRegister}
+            onPress={handleRegister}
             text="SIGN UP"
             //disable={isDisable}
             type="primary"
@@ -206,7 +215,7 @@ const SignUpScreen = ({navigation}: any) => {
           </RowComponent>
         </SectionComponent>
       </ContainerComponent>
-      
+      <LoadingModal visible={isLoading} />
     </>
   );
 };

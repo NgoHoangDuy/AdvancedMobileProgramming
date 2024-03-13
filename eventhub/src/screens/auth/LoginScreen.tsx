@@ -1,16 +1,57 @@
-import {View, Text, Button, Image, Switch} from 'react-native';
-import React, { useState } from 'react';
+import {View, Text, Button, Image, Switch, Alert} from 'react-native';
+import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { globalStyles } from '../../styles/globalStyles';
 import { ButtonComponent, ContainerComponent, InputComponent, RowComponent, SectionComponent, SpaceComponent, TextComponent } from '../../components';
 import { Lock, Sms } from 'iconsax-react-native';
 import { appColors } from '../../constants/appColors';
 import SocialLogin from './components/SocialLogin';
+import authenticationAPI from '../../apis/authApi';
+import { useDispatch } from 'react-redux';
+import { Validate } from '../../utils/validate';
+import { addAuth } from '../../redux/reducers/authReducer';
 
 const LoginScreen = ({navigation}: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRemember, setIsRemember] = useState(true);
+  const [isDisable, setIsDisable] = useState(true);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const emailValidation = Validate.email(email);
+
+    if (!email || !password || !emailValidation) {
+      setIsDisable(true);
+    } else {
+      setIsDisable(false);
+    }
+  }, [email, password]);
+
+  const handleLogin = async () => {
+    const emailValidation = Validate.email(email);
+    if (emailValidation) {
+      try {
+        const res = await authenticationAPI.HandleAuthentication(
+          '/login',
+          {email, password},
+          'post',
+        );
+
+        dispatch(addAuth(res.data));
+
+        await AsyncStorage.setItem(
+          'auth',
+          isRemember ? JSON.stringify(res.data) : email,
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      Alert.alert('Email is not correct!!!!');
+    }
+  };
   return (
     <ContainerComponent isImageBackground isScroll>
     <SectionComponent
@@ -68,7 +109,7 @@ const LoginScreen = ({navigation}: any) => {
     <SectionComponent>
       <ButtonComponent
         //disable={isDisable}
-        //onPress={handleLogin}
+        onPress={handleLogin}
         text="SIGN IN"
         type="primary"
       />
