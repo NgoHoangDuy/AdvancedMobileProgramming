@@ -1,19 +1,17 @@
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
-import TabNavigator from './TabNavigator';
-import DrawerNavigator from './DrawerNavigator';
+import {ProfileScreen} from '../screens';
 
-const MainNavigator = () => {
+const ProfileNavigator = () => {
   const Stack = createNativeStackNavigator();
-
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}>
-      <Stack.Screen name="Main" component={DrawerNavigator} />
+      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
     </Stack.Navigator>
   );
 };
 
-export default MainNavigator;
+export default ProfileNavigator;

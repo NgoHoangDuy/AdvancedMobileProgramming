@@ -1,4 +1,4 @@
-import {Lock, Sms, User} from 'iconsax-react-native';
+import {ArrowRight, Lock, Sms, User} from 'iconsax-react-native';
 import React, {useEffect, useState} from 'react';
 import {useDispatch} from 'react-redux';
 import {
@@ -11,13 +11,12 @@ import {
   TextComponent,
 } from '../../components';
 import {appColors} from '../../constants/appColors';
-import SocialLogin from './components/SocialLogin';
 import {LoadingModal} from '../../modals';
 import {Validate} from '../../utils/validate';
-//import SocialLogin from './components/SocialLogin';
+import SocialLogin from './components/SocialLogin';
 import authenticationAPI from '../../apis/authApi';
-import { addAuth } from '../../redux/reducers/authReducer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View } from 'react-native';
+import { globalStyles } from '../../styles/globalStyles';
 
 interface ErrorMessages {
   email: string;
@@ -37,14 +36,6 @@ const SignUpScreen = ({navigation}: any) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<any>();
   const [isDisable, setIsDisable] = useState(true);
-  
-  const handleChangeValue = (key: string, value: string) => {
-    const data: any = {...values};
-
-    data[`${key}`] = value;
-
-    setValues(data);
-  };
 
   const dispatch = useDispatch();
 
@@ -65,13 +56,13 @@ const SignUpScreen = ({navigation}: any) => {
     }
   }, [errorMessage, values]);
 
-  /*const handleChangeValue = (key: string, value: string) => {
+  const handleChangeValue = (key: string, value: string) => {
     const data: any = {...values};
 
     data[`${key}`] = value;
 
     setValues(data);
-  };*/
+  };
 
   const formValidator = (key: string) => {
     const data = {...errorMessage};
@@ -111,31 +102,24 @@ const SignUpScreen = ({navigation}: any) => {
   };
 
   const handleRegister = async () => {
-    //const api = `/verification`;
-    //setIsLoading(true);
+    const api = `/verification`;
+    setIsLoading(true);
     try {
-      const res = await authenticationAPI.HandleAuthentication('/register', 
-      {
-        fullname: values.username,
-        email: values.email,
-        password: values.password
-      },
-        //api,
-        //{email: values.email},
+      const res = await authenticationAPI.HandleAuthentication(
+        api,
+        {email: values.email},
         'post',
       );
-      dispatch(addAuth(res.data));
-      await AsyncStorage.setItem('auth', JSON.stringify(res.data));
-      console.log(res);
-      //setIsLoading(false);
 
-      /*navigation.navigate('Verification', {
+      setIsLoading(false);
+
+      navigation.navigate('Verification', {
         code: res.data.code,
         ...values,
-      });*/
+      });
     } catch (error) {
       console.log(error);
-      //setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -158,7 +142,7 @@ const SignUpScreen = ({navigation}: any) => {
             onChange={val => handleChangeValue('email', val)}
             allowClear
             affix={<Sms size={22} color={appColors.gray} />}
-            //onEnd={() => formValidator('email')}
+            onEnd={() => formValidator('email')}
           />
           <InputComponent
             value={values.password}
@@ -167,7 +151,7 @@ const SignUpScreen = ({navigation}: any) => {
             isPassword
             allowClear
             affix={<Lock size={22} color={appColors.gray} />}
-            //onEnd={() => formValidator('password')}
+            onEnd={() => formValidator('password')}
           />
           <InputComponent
             value={values.confirmPassword}
@@ -176,7 +160,7 @@ const SignUpScreen = ({navigation}: any) => {
             isPassword
             allowClear
             affix={<Lock size={22} color={appColors.gray} />}
-            //onEnd={() => formValidator('confirmPassword')}
+            onEnd={() => formValidator('confirmPassword')}
           />
         </SectionComponent>
 
@@ -199,8 +183,20 @@ const SignUpScreen = ({navigation}: any) => {
           <ButtonComponent
             onPress={handleRegister}
             text="SIGN UP"
-            //disable={isDisable}
+            disable={isDisable}
             type="primary"
+            iconFlex="right"
+            icon={
+            <View
+              style={[
+                globalStyles.iconContainer,
+                {
+                  backgroundColor:
+                    isDisable ? appColors.gray : appColors.primary,
+                },]}>
+              <ArrowRight size={18} color={appColors.white} />
+            </View>
+          }
           />
         </SectionComponent>
         <SocialLogin />

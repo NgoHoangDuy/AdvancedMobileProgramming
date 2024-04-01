@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { globalStyles } from '../../styles/globalStyles';
 import { ButtonComponent, ContainerComponent, InputComponent, RowComponent, SectionComponent, SpaceComponent, TextComponent } from '../../components';
-import { Lock, Sms } from 'iconsax-react-native';
+import { ArrowRight, Lock, Sms } from 'iconsax-react-native';
 import { appColors } from '../../constants/appColors';
 import SocialLogin from './components/SocialLogin';
 import authenticationAPI from '../../apis/authApi';
@@ -108,10 +108,22 @@ const LoginScreen = ({navigation}: any) => {
     <SpaceComponent height={16} />
     <SectionComponent>
       <ButtonComponent
-        //disable={isDisable}
+        disable={isDisable}
         onPress={handleLogin}
         text="SIGN IN"
         type="primary"
+        iconFlex="right"
+        icon={
+            <View
+              style={[
+                globalStyles.iconContainer,
+                {
+                  backgroundColor:
+                    isDisable ? appColors.gray : appColors.primary,
+                },]}>
+              <ArrowRight size={18} color={appColors.white} />
+            </View>
+          }
       />
     </SectionComponent>
     <SocialLogin />
