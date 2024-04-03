@@ -1,5 +1,3 @@
-//import GeoLocation from '@react-native-community/geolocation';
-import axios from 'axios';
 import {
   HambergerMenu,
   Notification,
@@ -17,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   CategoriesList,
   CircleComponent,
@@ -30,15 +29,46 @@ import {
 } from '../../components';
 import {appColors} from '../../constants/appColors';
 import {fontFamilies} from '../../constants/fontFamilies';
-//import {AddressModel} from '../../models/AddressModel';
+import {authSelector} from '../../redux/reducers/authReducer';
 import {globalStyles} from '../../styles/globalStyles';
+import GeoLocation from '@react-native-community/geolocation';
+import axios from 'axios';
+import {AddressModel} from '../../models/AddressModel';
+import Geocoder from 'react-native-geocoding';
 
+Geocoder.init(process.env.MAP_API_KEY as string);
 const HomeScreen = ({navigation}: any) => {
-  //const [addressInfo, setAddressInfo] = useState<AddressModel>();
+  const [currentLocation, setCurrentLocation] = useState<AddressModel>();
 
-  /*useEffect(() => {
-    handleGetCurrentLocation();
-  }, []);*/
+  const dispatch = useDispatch();
+
+  const auth = useSelector(authSelector);
+
+  useEffect(() => {
+    GeoLocation.getCurrentPosition(position => {
+      if (position.coords) {
+        reverseGeoCode({
+          lat: position.coords.latitude,
+          long: position.coords.longitude,
+        });
+      }
+    });
+  }, []);
+
+  const reverseGeoCode = async ({lat, long}: {lat: number; long: number}) => {
+    const api = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${long}&lang=vi-VI&apiKey=H0NkGlckEWl-YmiHPS8diXwRPd1yzdxMcOeH_qII8zk`;
+
+    try {
+      const res = await axios(api);
+
+      if (res && res.status === 200 && res.data) {
+        const items = res.data.items;
+        setCurrentLocation(items[0]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const itemEvent = {
     title: 'International Band Music Concert',
@@ -55,39 +85,6 @@ const HomeScreen = ({navigation}: any) => {
     endAt: Date.now(),
     date: Date.now(),
   };
-
-  /*const handleGetCurrentLocation = async () => {
-    GeoLocation.getCurrentPosition(position => {
-      if (position && position.coords) {
-        handleResertGeocode({
-          lat: position.coords.latitude,
-          long: position.coords.longitude,
-        });
-      }
-    });
-  };*/
-
-  /*const handleResertGeocode = async ({
-    lat,
-    long,
-  }: {
-    lat: number;
-    long: number;
-  }) => {
-    const api = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${long}&lang=en-US&apiKey=EoGZAqvCk9NFBvK6Trb_9iudji1DWPy1QfnsJN0GRlo`;
-    await axios
-      .get(api)
-      .then(res => {
-        if (res && res.status === 200 && res.data) {
-          const items = res.data.items;
-
-          items.length > 0 && setAddressInfo(items[0]);
-        }
-      })
-      .catch(e => {
-        console.log('Error in getAddressFromCoordinates', e);
-      });
-  };*/
 
   return (
     <View style={[globalStyles.container]}>
@@ -119,13 +116,15 @@ const HomeScreen = ({navigation}: any) => {
                   color={appColors.white}
                 />
               </RowComponent>
-              <TextComponent
-                text="New York, USA"
-                flex={0}
-                color={appColors.white}
-                font={fontFamilies.medium}
-                size={13}
-              />
+              {currentLocation && (
+                <TextComponent
+                  text={`${currentLocation.address.city}, ${currentLocation.address.county}`}
+                  flex={0}
+                  color={appColors.white}
+                  font={fontFamilies.medium}
+                  size={13}
+                />
+              )}
             </View>
 
             <CircleComponent color="#524CE0" size={36}>
@@ -191,7 +190,7 @@ const HomeScreen = ({navigation}: any) => {
               }
             />
           </RowComponent>
-          <SpaceComponent height={10} />
+          <SpaceComponent height={20} />
         </View>
         <View style={{marginBottom: -16}}>
           <CategoriesList isFill />
@@ -202,7 +201,7 @@ const HomeScreen = ({navigation}: any) => {
         style={[
           {
             flex: 1,
-            marginTop: Platform.OS === 'ios' ? 22 : 24,
+            marginTop: Platform.OS === 'ios' ? 22 : 18,
           },
         ]}>
         <SectionComponent styles={{paddingHorizontal: 0, paddingTop: 24}}>

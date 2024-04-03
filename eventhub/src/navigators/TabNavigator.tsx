@@ -8,17 +8,15 @@ import ProfileNavigator from './ProfileNavigator';
 import {appColors} from '../constants/appColors';
 import {
   AddSquare,
-  Calendar,
-  Home2,
-  Iost,
+  Calendar, 
   Location,
   User,
 } from 'iconsax-react-native';
 import {CircleComponent, TextComponent} from '../components';
-import {Platform, View} from 'react-native';
+import {Platform} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {globalStyles} from '../styles/globalStyles';
-import DrawerNavigator from './DrawerNavigator';
+
 
 const TabNavigator = () => {
   const Tab = createBottomTabNavigator();
@@ -70,6 +68,7 @@ const TabNavigator = () => {
         tabBarIconStyle: {
           marginTop: 8,
         },
+        tabBarLabelPosition: 'below-icon',
         tabBarLabel({focused}) {
           return route.name === 'Add' ? null : (
             <TextComponent

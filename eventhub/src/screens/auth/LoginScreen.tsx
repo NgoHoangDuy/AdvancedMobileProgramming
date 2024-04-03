@@ -1,4 +1,4 @@
-import {View, Text, Button, Image, Switch, Alert} from 'react-native';
+import {View, Image, Switch, Alert} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { globalStyles } from '../../styles/globalStyles';
@@ -10,12 +10,13 @@ import authenticationAPI from '../../apis/authApi';
 import { useDispatch } from 'react-redux';
 import { Validate } from '../../utils/validate';
 import { addAuth } from '../../redux/reducers/authReducer';
-
+import {LoadingModal} from '../../modals';
 const LoginScreen = ({navigation}: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRemember, setIsRemember] = useState(true);
   const [isDisable, setIsDisable] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -32,6 +33,7 @@ const LoginScreen = ({navigation}: any) => {
   const handleLogin = async () => {
     const emailValidation = Validate.email(email);
     if (emailValidation) {
+      setIsLoading(true);
       try {
         const res = await authenticationAPI.HandleAuthentication(
           '/login',
@@ -45,15 +47,17 @@ const LoginScreen = ({navigation}: any) => {
           'auth',
           isRemember ? JSON.stringify(res.data) : email,
         );
+        setIsLoading(false);
       } catch (error) {
         console.log(error);
+        setIsLoading(false);
       }
     } else {
       Alert.alert('Email is not correct!!!!');
     }
   };
   return (
-    <ContainerComponent isImageBackground isScroll>
+    <><ContainerComponent isImageBackground isScroll>
     <SectionComponent
       styles={{
         justifyContent: 'center',
@@ -108,7 +112,7 @@ const LoginScreen = ({navigation}: any) => {
     <SpaceComponent height={16} />
     <SectionComponent>
       <ButtonComponent
-        disable={isDisable}
+        disable={isLoading || isDisable}
         onPress={handleLogin}
         text="SIGN IN"
         type="primary"
@@ -138,6 +142,10 @@ const LoginScreen = ({navigation}: any) => {
       </RowComponent>
     </SectionComponent>
   </ContainerComponent>
+  <LoadingModal visible={isLoading} />
+  </>
+    
+  
   );
 };
 
