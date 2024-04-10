@@ -1,3 +1,6 @@
+import GeoLocation from '@react-native-community/geolocation';
+import messaging from '@react-native-firebase/messaging';
+import axios from 'axios';
 import {
   HambergerMenu,
   Notification,
@@ -14,12 +17,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Geocoder from 'react-native-geocoding';
+import Toast from 'react-native-toast-message';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {useDispatch, useSelector} from 'react-redux';
+import eventAPI from '../../apis/eventApi';
 import {
   CategoriesList,
   CircleComponent,
   EventItem,
+  LoadingComponent,
   RowComponent,
   SectionComponent,
   SpaceComponent,
@@ -29,31 +35,55 @@ import {
 } from '../../components';
 import {appColors} from '../../constants/appColors';
 import {fontFamilies} from '../../constants/fontFamilies';
-import {authSelector} from '../../redux/reducers/authReducer';
-import {globalStyles} from '../../styles/globalStyles';
-import GeoLocation from '@react-native-community/geolocation';
-import axios from 'axios';
 import {AddressModel} from '../../models/AddressModel';
-import Geocoder from 'react-native-geocoding';
+import {EventModel} from '../../models/EventModel';
+import {globalStyles} from '../../styles/globalStyles';
 
 Geocoder.init(process.env.MAP_API_KEY as string);
+
 const HomeScreen = ({navigation}: any) => {
   const [currentLocation, setCurrentLocation] = useState<AddressModel>();
-
-  const dispatch = useDispatch();
-
-  const auth = useSelector(authSelector);
+  const [events, setEvents] = useState<EventModel[]>([]);
+  const [nearbyEvents, setNearbyEvents] = useState<EventModel[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    GeoLocation.getCurrentPosition(position => {
-      if (position.coords) {
-        reverseGeoCode({
-          lat: position.coords.latitude,
-          long: position.coords.longitude,
-        });
-      }
+    GeoLocation.getCurrentPosition(
+      (position: any) => {
+        if (position.coords) {
+          reverseGeoCode({
+            lat: position.coords.latitude,
+            long: position.coords.longitude,
+          });
+        }
+      },
+      (error: any) => {
+        console.log(error);
+      },
+      {},
+    );
+
+    getEvents();
+
+    messaging().onMessage(async (mess: any) => {
+      Toast.show({
+        text1: mess.notification.title,
+        text2: mess.notification.body,
+        onPress: () => {
+          console.log(mess);
+          const id = mess.data.id;
+          console.log(id);
+          navigation.navigate('EventDetail', {id});
+        },
+      });
     });
   }, []);
+
+  useEffect(() => {
+    currentLocation &&
+      currentLocation.position &&
+      getEvents(currentLocation.position.lat, currentLocation.position.lng);
+  }, [currentLocation]);
 
   const reverseGeoCode = async ({lat, long}: {lat: number; long: number}) => {
     const api = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${long}&lang=vi-VI&apiKey=H0NkGlckEWl-YmiHPS8diXwRPd1yzdxMcOeH_qII8zk`;
@@ -70,26 +100,33 @@ const HomeScreen = ({navigation}: any) => {
     }
   };
 
-  const itemEvent = {
-    title: 'International Band Music Concert',
-    description:
-      'Enjoy your favorite dishe and a lovely your friends and family and have a great time. Food from local food trucks will be available for purchase.',
-    location: {
-      title: 'Gala Convention Center',
-      address: '36 Guild Street London, UK',
-    },
-    imageUrl: '',
-    users: [''],
-    authorId: '',
-    startAt: Date.now(),
-    endAt: Date.now(),
-    date: Date.now(),
+  const getEvents = async (lat?: number, long?: number, distance?: number) => {
+    const api = `${
+      lat && long
+        ? `/get-events?lat=${lat}&long=${long}&distance=${
+            distance ?? 5
+          }&limit=5`
+        : `/get-events?limit=5`
+    }`;
+    // &date=${new Date().toISOString()}`;
+
+    setIsLoading(true);
+    try {
+      const res = await eventAPI.HandleEvent(api);
+
+      setIsLoading(false);
+      res &&
+        res.data &&
+        (lat && long ? setNearbyEvents(res.data) : setEvents(res.data));
+    } catch (error) {
+      setIsLoading(false);
+      console.log(`Get event error in home screen line 74 ${error}`);
+    }
   };
 
   return (
     <View style={[globalStyles.container]}>
       <StatusBar barStyle={'light-content'} />
-
       <View
         style={{
           backgroundColor: appColors.primary,
@@ -196,6 +233,7 @@ const HomeScreen = ({navigation}: any) => {
           <CategoriesList isFill />
         </View>
       </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={[
@@ -205,15 +243,22 @@ const HomeScreen = ({navigation}: any) => {
           },
         ]}>
         <SectionComponent styles={{paddingHorizontal: 0, paddingTop: 24}}>
-          <TabBarComponent title="Upcoming Events" onPress={() => {}} />
-          <FlatList
-            showsHorizontalScrollIndicator={false}
-            horizontal
-            data={Array.from({length: 5})}
-            renderItem={({item, index}) => (
-              <EventItem key={`event${index}`} item={itemEvent} type="card" />
-            )}
+          <TabBarComponent
+            title="Upcoming Events"
+            onPress={() => navigation.navigate('ExploreEvents')}
           />
+          {events.length > 0 ? (
+            <FlatList
+              showsHorizontalScrollIndicator={false}
+              horizontal
+              data={events}
+              renderItem={({item, index}) => (
+                <EventItem key={`event${index}`} item={item} type="card" />
+              )}
+            />
+          ) : (
+            <LoadingComponent isLoading={isLoading} values={events.length} />
+          )}
         </SectionComponent>
         <SectionComponent>
           <ImageBackground
@@ -228,6 +273,7 @@ const HomeScreen = ({navigation}: any) => {
 
             <RowComponent justify="flex-start">
               <TouchableOpacity
+                onPress={() => console.log('fafafa')}
                 style={[
                   globalStyles.button,
                   {
@@ -247,14 +293,21 @@ const HomeScreen = ({navigation}: any) => {
         </SectionComponent>
         <SectionComponent styles={{paddingHorizontal: 0, paddingTop: 24}}>
           <TabBarComponent title="Nearby You" onPress={() => {}} />
-          <FlatList
-            showsHorizontalScrollIndicator={false}
-            horizontal
-            data={Array.from({length: 5})}
-            renderItem={({item, index}) => (
-              <EventItem key={`event${index}`} item={itemEvent} type="card" />
-            )}
-          />
+          {nearbyEvents.length > 0 ? (
+            <FlatList
+              showsHorizontalScrollIndicator={false}
+              horizontal
+              data={nearbyEvents}
+              renderItem={({item, index}) => (
+                <EventItem key={`event${index}`} item={item} type="card" />
+              )}
+            />
+          ) : (
+            <LoadingComponent
+              isLoading={isLoading}
+              values={nearbyEvents.length}
+            />
+          )}
         </SectionComponent>
       </ScrollView>
     </View>

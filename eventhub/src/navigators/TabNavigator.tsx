@@ -1,22 +1,16 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {AddSquare, Calendar, Location, User} from 'iconsax-react-native';
 import React, {ReactNode} from 'react';
-import ExploreNavigator from './ExploreNavigator';
-import EventNavigator from './EventNavigator';
-import {AddNewScreen} from '../screens';
-import MapNavigator from './MapNavigator';
-import ProfileNavigator from './ProfileNavigator';
-import {appColors} from '../constants/appColors';
-import {
-  AddSquare,
-  Calendar, 
-  Location,
-  User,
-} from 'iconsax-react-native';
-import {CircleComponent, TextComponent} from '../components';
 import {Platform} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {CircleComponent, TextComponent} from '../components';
+import {appColors} from '../constants/appColors';
+import {AddNewScreen} from '../screens';
 import {globalStyles} from '../styles/globalStyles';
-
+import EventNavigator from './EventNavigator';
+import ExploreNavigator from './ExploreNavigator';
+import MapNavigator from './MapNavigator';
+import ProfileNavigator from './ProfileNavigator';
 
 const TabNavigator = () => {
   const Tab = createBottomTabNavigator();
@@ -31,6 +25,7 @@ const TabNavigator = () => {
           alignItems: 'center',
           backgroundColor: appColors.white,
         },
+        tabBarHideOnKeyboard: true,
         tabBarIcon: ({focused, color, size}) => {
           let icon: ReactNode;
           color = focused ? appColors.primary : appColors.gray5;
