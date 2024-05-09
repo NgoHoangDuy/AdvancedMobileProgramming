@@ -11,16 +11,17 @@ import DateTimePicker from './DateTimePicker';
 import DropdownPicker from './DropdownPicker';
 import EventItem from './EventItem';
 import InputComponent from './InputComponent';
-//import ListEventComponent from './ListEventComponent';
+import ListEventComponent from './ListEventComponent';
 import LoadingComponent from './LoadingComponent';
-//import MakerCustom from './MakerCustom';
+import MakerCustom from './MakerCustom';
+import RadioButtons from './RadioButtons';
 import RowComponent from './RowComponent';
 import SectionComponent from './SectionComponent';
 import SpaceComponent from './SpaceComponent';
 import TabBarComponent from './TabBarComponent';
 import TagComponent from './TagComponent';
 import TextComponent from './TextComponent';
-//import UserComponent from './UserComponent';
+import UserComponent from './UserComponent';
 
 export {
   SpaceComponent,
@@ -41,9 +42,10 @@ export {
   DateTimePicker,
   DropdownPicker,
   ButtonImagePicker,
-  //MakerCustom,
+  MakerCustom,
   LoadingComponent,
   AvatarComponent,
-  //UserComponent,
-  //ListEventComponent,
+  UserComponent,
+  ListEventComponent,
+  RadioButtons
 };

@@ -5,7 +5,8 @@ export const appInfo = {
     WIDTH: Dimensions.get('window').width,
     HEIGHT: Dimensions.get('window').height,
   },
-  BASE_URL: 'http://192.168.1.15:3001',
+  BASE_URL: 'http://10.0.228.137:3001',
+  //BASE_URL: 'https://eventhub-sever.onrender.com',
   monthNames: [
     'January',
     'February',

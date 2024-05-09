@@ -1,8 +1,8 @@
-import {View} from 'react-native';
+import {View, Text} from 'react-native';
 import React, {useState} from 'react';
 import DatePicker from 'react-native-date-picker';
 import {RowComponent, TextComponent} from '.';
-import { Calendar, Clock} from 'iconsax-react-native';
+import {ArrowDown2, Calendar, Clock} from 'iconsax-react-native';
 import {appColors} from '../constants/appColors';
 import {globalStyles} from '../styles/globalStyles';
 import {fontFamilies} from '../constants/fontFamilies';
@@ -11,7 +11,7 @@ import {DateTime} from '../utils/DateTime';
 interface Props {
   selected?: Date;
   type: 'date' | 'time';
-  onSelect: (val: Date) => void;
+  onSelect: (val: number) => void;
   label?: string;
 }
 
@@ -52,7 +52,7 @@ const DateTimePicker = (props: Props) => {
         onCancel={() => setIsShowDatePicker(false)}
         onConfirm={val => {
           setIsShowDatePicker(false);
-          onSelect(val);
+          onSelect(new Date(val).getTime());
         }}
       />
     </View>

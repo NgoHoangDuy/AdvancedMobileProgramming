@@ -23,6 +23,8 @@ import {appColors} from '../constants/appColors';
 import storage from '@react-native-firebase/storage';
 import {EventModel} from '../models/EventModel';
 import eventAPI from '../apis/eventApi';
+import {LoadingModal} from '../modals';
+import {DateTime} from '../utils/DateTime';
 
 const initValues = {
   title: '',
@@ -40,7 +42,7 @@ const initValues = {
   endAt: Date.now(),
   date: Date.now(),
   price: '',
-  category: '',
+  categories: '',
 };
 
 const AddNewScreen = ({navigation}: any) => {
@@ -53,9 +55,12 @@ const AddNewScreen = ({navigation}: any) => {
   const [usersSelects, setUsersSelects] = useState<SelectModel[]>([]);
   const [fileSelected, setFileSelected] = useState<any>();
   const [errorsMess, setErrorsMess] = useState<string[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [categories, setCategories] = useState<SelectModel[]>([]);
 
   useEffect(() => {
     handleGetAllUsers();
+    getCategories();
   }, []);
 
   useEffect(() => {
@@ -64,8 +69,35 @@ const AddNewScreen = ({navigation}: any) => {
     setErrorsMess(mess);
   }, [eventData]);
 
-  const handleChangeValue = (key: string, value: string | Date | string[]) => {
+  const getCategories = async () => {
+    const api = `/get-categories`;
+
+    try {
+      const res = await eventAPI.HandleEvent(api);
+      if (res.data) {
+        const items: SelectModel[] = [];
+
+        const data = res.data;
+        data.forEach((item: any) =>
+          items.push({
+            label: item.title,
+            value: item._id,
+          }),
+        );
+
+        setCategories(items);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChangeValue = (
+    key: string,
+    value: string | number | string[],
+  ) => {
     const items = {...eventData};
+
     items[`${key}`] = value;
 
     setEventData(items);
@@ -82,9 +114,9 @@ const AddNewScreen = ({navigation}: any) => {
 
         res.data.forEach(
           (item: any) =>
-            item.name &&
+            item.email &&
             items.push({
-              label: item.name,
+              label: item.email,
               value: item.id,
             }),
         );
@@ -108,10 +140,10 @@ const AddNewScreen = ({navigation}: any) => {
       res.on(
         'state_changed',
         snap => {
-          console.log(snap.bytesTransferred);
+          // console.log(snap.bytesTransferred);
         },
         error => {
-          console.log(error);
+          // console.log(error);
         },
         () => {
           storage()
@@ -131,12 +163,20 @@ const AddNewScreen = ({navigation}: any) => {
 
   const handlePustEvent = async (event: EventModel) => {
     const api = `/add-new`;
+
+    setIsCreating(true);
     try {
+      event.startAt = DateTime.GetEventTime(event.date, event.startAt);
+      event.endAt = DateTime.GetEventTime(event.date, event.endAt);
+
       const res = await eventAPI.HandleEvent(api, event, 'post');
+
+      setIsCreating(false);
       navigation.navigate('Explore', {
         screen: 'HomeScreen',
       });
     } catch (error) {
+      setIsCreating(false);
       console.log(error);
     }
   };
@@ -194,26 +234,9 @@ const AddNewScreen = ({navigation}: any) => {
         />
 
         <DropdownPicker
-          selected={eventData.category}
-          values={[
-            {
-              label: 'Sport',
-              value: 'sport',
-            },
-            {
-              label: 'Food',
-              value: 'food',
-            },
-            {
-              label: 'Art',
-              value: 'art',
-            },
-            {
-              label: 'Music',
-              value: 'music',
-            },
-          ]}
-          onSelect={val => handleChangeValue('category', val)}
+          selected={eventData.categories}
+          values={categories}
+          onSelect={val => handleChangeValue('categories', val)}
         />
 
         <RowComponent>
@@ -285,6 +308,8 @@ const AddNewScreen = ({navigation}: any) => {
           type="primary"
         />
       </SectionComponent>
+
+      <LoadingModal visible={isCreating} />
     </ContainerComponent>
   );
 };

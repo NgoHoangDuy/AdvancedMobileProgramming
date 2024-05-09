@@ -37,6 +37,7 @@ const EditProfile = (props: Props) => {
       const res: any = await eventAPI.HandleEvent(api);
 
       setCategories(res.data);
+      console.log(res.data);
     } catch (error) {
       console.log(error);
     }

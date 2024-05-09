@@ -10,21 +10,21 @@ import {
 } from '../../components';
 import {ArrowRight, Sms} from 'iconsax-react-native';
 import {appColors} from '../../constants/appColors';
-//import {Validate} from '../../utils/validate';
-//import {LoadingModal} from '../../modals';
-//import authenticationAPI from '../../apis/authApi';
+import {Validate} from '../../utils/validate';
+import {LoadingModal} from '../../modals';
+import authenticationAPI from '../../apis/authApi';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isDisable, setIsDisable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  /*const handleCheckEmail = () => {
+  const handleCheckEmail = () => {
     const isValidEmail = Validate.email(email);
     setIsDisable(!isValidEmail);
-  };*/
+  };
 
-  /*const handleForgotPassword = async () => {
+  const handleForgotPassword = async () => {
     const api = `/forgotPassword`;
     setIsLoading(true);
     try {
@@ -42,7 +42,7 @@ const ForgotPassword = () => {
       setIsLoading(false);
       console.log(`Can not create new password api forgot password, ${error}`);
     }
-  };*/
+  };
 
   return (
     <ContainerComponent back isImageBackground isScroll>
@@ -56,20 +56,20 @@ const ForgotPassword = () => {
           onChange={val => setEmail(val)}
           affix={<Sms size={20} color={appColors.gray} />}
           placeholder="abc@gmail.com"
-          //onEnd={handleCheckEmail}
+          onEnd={handleCheckEmail}
         />
       </SectionComponent>
       <SectionComponent>
         <ButtonComponent
-          //onPress={handleForgotPassword}
-          //disable={isDisable}
+          onPress={handleForgotPassword}
+          disable={isDisable}
           text="Send"
           type="primary"
           icon={<ArrowRight size={20} color={appColors.white} />}
           iconFlex="right"
         />
       </SectionComponent>
-      
+      <LoadingModal visible={isLoading} />
     </ContainerComponent>
   );
 };

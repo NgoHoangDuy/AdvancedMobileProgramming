@@ -144,6 +144,7 @@ const Verification = ({navigation, route}: any) => {
             }}
             // onChange={() => }
             placeholder="-"
+            placeholderTextColor={appColors.gray5}
           />
           <TextInput
             ref={ref2}
@@ -156,6 +157,7 @@ const Verification = ({navigation, route}: any) => {
             style={[styles.input]}
             maxLength={1}
             placeholder="-"
+            placeholderTextColor={appColors.gray5}
           />
           <TextInput
             keyboardType="number-pad"
@@ -168,6 +170,7 @@ const Verification = ({navigation, route}: any) => {
             style={[styles.input]}
             maxLength={1}
             placeholder="-"
+            placeholderTextColor={appColors.gray5}
           />
           <TextInput
             keyboardType="number-pad"
@@ -179,6 +182,7 @@ const Verification = ({navigation, route}: any) => {
             style={[styles.input]}
             maxLength={1}
             placeholder="-"
+            placeholderTextColor={appColors.gray5}
           />
         </RowComponent>
       </SectionComponent>
@@ -253,5 +257,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: fontFamilies.bold,
     textAlign: 'center',
+    color: appColors.black,
   },
 });

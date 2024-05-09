@@ -1,5 +1,6 @@
 import GeoLocation from '@react-native-community/geolocation';
 import messaging from '@react-native-firebase/messaging';
+import {useIsFocused} from '@react-navigation/native';
 import axios from 'axios';
 import {
   HambergerMenu,
@@ -17,7 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Geocoder from 'react-native-geocoding';
+
 import Toast from 'react-native-toast-message';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import eventAPI from '../../apis/eventApi';
@@ -38,14 +39,17 @@ import {fontFamilies} from '../../constants/fontFamilies';
 import {AddressModel} from '../../models/AddressModel';
 import {EventModel} from '../../models/EventModel';
 import {globalStyles} from '../../styles/globalStyles';
-
-Geocoder.init(process.env.MAP_API_KEY as string);
+import {handleLinking} from '../../utils/handleLinking';
 
 const HomeScreen = ({navigation}: any) => {
   const [currentLocation, setCurrentLocation] = useState<AddressModel>();
   const [events, setEvents] = useState<EventModel[]>([]);
   const [nearbyEvents, setNearbyEvents] = useState<EventModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [eventData, setEventData] = useState<EventModel[]>([]);
+
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     GeoLocation.getCurrentPosition(
@@ -64,26 +68,42 @@ const HomeScreen = ({navigation}: any) => {
     );
 
     getEvents();
-
+    getEventsData();
     messaging().onMessage(async (mess: any) => {
       Toast.show({
         text1: mess.notification.title,
         text2: mess.notification.body,
         onPress: () => {
-          console.log(mess);
-          const id = mess.data.id;
-          console.log(id);
-          navigation.navigate('EventDetail', {id});
+          const id = mess.data ? mess.data.id : '';
+          id && navigation.navigate('EventDetail', {id});
         },
       });
     });
+
+    messaging()
+      .getInitialNotification()
+      .then((mess: any) => {
+        const id = mess && mess.data ? mess.data.id : '';
+        id && handleLinking(`eventhub://app/detail/${mess.data.id}`);
+      });
   }, []);
 
   useEffect(() => {
+    getNearByEvents();
+  }, [currentLocation]);
+
+  useEffect(() => {
+    if (isFocused) {
+      getEvents();
+      getNearByEvents();
+    }
+  }, [isFocused]);
+
+  const getNearByEvents = () => {
     currentLocation &&
       currentLocation.position &&
       getEvents(currentLocation.position.lat, currentLocation.position.lng);
-  }, [currentLocation]);
+  };
 
   const reverseGeoCode = async ({lat, long}: {lat: number; long: number}) => {
     const api = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${long}&lang=vi-VI&apiKey=H0NkGlckEWl-YmiHPS8diXwRPd1yzdxMcOeH_qII8zk`;
@@ -108,9 +128,10 @@ const HomeScreen = ({navigation}: any) => {
           }&limit=5`
         : `/get-events?limit=5`
     }`;
-    // &date=${new Date().toISOString()}`;
 
-    setIsLoading(true);
+    if (events.length === 0 || nearbyEvents.length === 0) {
+      setIsLoading(true);
+    }
     try {
       const res = await eventAPI.HandleEvent(api);
 
@@ -121,6 +142,27 @@ const HomeScreen = ({navigation}: any) => {
     } catch (error) {
       setIsLoading(false);
       console.log(`Get event error in home screen line 74 ${error}`);
+    }
+  };
+
+  const getEventsData = async (
+    lat?: number,
+    long?: number,
+    distance?: number,
+  ) => {
+    const api = `/get-events`;
+    try {
+      const res = await eventAPI.HandleEvent(api);
+
+      const data = res.data;
+
+      const items: EventModel[] = [];
+
+      data.forEach((item: any) => items.push(item));
+
+      setEventData(items);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -245,7 +287,12 @@ const HomeScreen = ({navigation}: any) => {
         <SectionComponent styles={{paddingHorizontal: 0, paddingTop: 24}}>
           <TabBarComponent
             title="Upcoming Events"
-            onPress={() => navigation.navigate('ExploreEvents')}
+            onPress={() =>
+              navigation.navigate('ExploreEvents', {
+                key: 'upcoming',
+                title: 'Upcoming Events',
+              })
+            }
           />
           {events.length > 0 ? (
             <FlatList
@@ -292,7 +339,15 @@ const HomeScreen = ({navigation}: any) => {
           </ImageBackground>
         </SectionComponent>
         <SectionComponent styles={{paddingHorizontal: 0, paddingTop: 24}}>
-          <TabBarComponent title="Nearby You" onPress={() => {}} />
+          <TabBarComponent
+            title="Nearby You"
+            onPress={() =>
+              navigation.navigate('ExploreEvents', {
+                key: 'nearby',
+                title: 'Nearby You',
+              })
+            }
+          />
           {nearbyEvents.length > 0 ? (
             <FlatList
               showsHorizontalScrollIndicator={false}
