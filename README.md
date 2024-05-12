@@ -39,6 +39,7 @@
 
 ```
 cd ./eventhub
+npm i
 npm start
 a
 ```
